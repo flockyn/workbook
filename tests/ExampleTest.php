@@ -6,7 +6,6 @@ namespace Tests;
 
 use Flockyn\Workbook\Example;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 
 final class ExampleTest extends TestCase
 {
