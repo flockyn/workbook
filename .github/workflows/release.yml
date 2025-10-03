@@ -1,0 +1,78 @@
+name: manual release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      notes: ${{ steps.release.outputs.notes }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check if branch and version is match
+        id: guard
+        run: |
+          CLEANED_VERSION="${TARGET_VERSION#v}"
+          MAJOR_VERSION="${CLEANED_VERSION%%.*}"
+          BRANCH_VERSION="${BRANCH%%.*}"
+          
+          if [ "$BRANCH_VERSION" != "$MAJOR_VERSION" ]; then
+            echo "Mismatch versions! Aborting."
+            VERSION_MISMATCH='true';
+          else
+            echo "Match versions. Continuing."
+            VERSION_MISMATCH='false';
+          fi
+          
+          echo "VERSION_MISMATCH=$(echo $VERSION_MISMATCH)" >> "$GITHUB_OUTPUT"
+        env:
+          BRANCH: ${{ github.ref_name }}
+          TARGET_VERSION: ${{ inputs.version }}
+
+      - name: Abort if versions mismatch
+        if: ${{ steps.guard.outputs.VERSION_MISMATCH == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Workflow failed. Release version does not match with selected target branch. Did you select the correct branch?')
+
+      - name: Create release
+        id: release
+        uses: flockyn/workflows/actions/create-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ inputs.version }}
+
+  update-changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    name: Update Changelog ${{ needs.release.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Update Changelog
+        uses: flockyn/workflows/actions/update-changelog@v1
+        with:
+          version: v${{ needs.release.outputs.version }}
+          notes: ${{ needs.release.outputs.notes }}
+          changelog-file: CHANGELOG.md
+          branch: ${{ github.ref_name }}

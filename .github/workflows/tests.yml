@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+      - '*.x'
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.2, 8.3, 8.4]
+        dependency-version: [prefer-lowest, prefer-stable]
+
+    name: Tests PHP ${{ matrix.php }} with ${{ matrix.dependency-version }} dependencies
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: PHP Tests
+        uses: flockyn/workflows/actions/php-tests@v1
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: pcov
+          composer-cmd: update --${{ matrix.dependency-version }}
