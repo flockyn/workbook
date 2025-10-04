@@ -21,7 +21,8 @@
     ],
     "require": {
         "php": "^8.2",
-        "cndrsdrmn/spreadsheet-installer": "^0.1"
+        "cndrsdrmn/spreadsheet-installer": "^0.1",
+        "flockyn/phpflock": "^1.1"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
