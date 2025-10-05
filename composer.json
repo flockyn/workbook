@@ -42,7 +42,7 @@
             "Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
         "lint": "pint",
@@ -63,6 +63,11 @@
         "preferred-install": "dist",
         "allow-plugins": {
             "cndrsdrmn/spreadsheet-installer": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
         }
     }
 }
